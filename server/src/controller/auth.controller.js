@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import {generateToken} from "../lib/utils.js";
 import { sendWelcomeEmail } from "../emails/emailHandlers.js";
 import {ENV} from "../lib/env.js";
-import { profile } from "console";
+import cloudinary from "../lib/cloudinary.js";
 
 export const signUp=async(req,res)=>{
   const {fullName,email,password}=req.body;
@@ -45,7 +45,7 @@ export const signUp=async(req,res)=>{
       }
       });
 
-      //todo: send a welcome email to the user after successful registration
+      
       try {
         await sendWelcomeEmail(savedUser.email,savedUser.fullName,ENV.CLIENT_URL);
       } catch (error) {
@@ -97,4 +97,24 @@ export const login=async(req,res)=>{
 export const logout=(_,res)=>{
   res.cookie("jwt","",{maxAge:0})
   res.status(200).json({message:"logged out succesfully"});
+}
+
+export const updateProfilePicture=async(req,res)=>{
+  try {
+    const {profilePicture}=req.body;
+    if(!profilePicture) return res.status(400).json({message:"Profile picture is required"});
+
+    const userId=req.user._id;
+    const uploadResult=await cloudinary.uploader.upload(profilePicture);
+    const updateUser=await User.findByIdAndUpdate(userId,{profilePicture:uploadResult.secure_url},{
+      new:true,
+    });
+    if(!updateUser) return res.status(404).json({message:"User not found"});
+
+    res.status(200).json({message:"Profile picture updated successfully",profilePicture:updateUser.profilePicture});
+
+
+  } catch (error) {
+    return res.status(500).json({message:"Server error"});
+  }
 }
