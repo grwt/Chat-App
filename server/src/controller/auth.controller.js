@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import {generateToken} from "../lib/utils.js";
+import { sendWelcomeEmail } from "../emails/emailHandlers.js";
+import {ENV} from "../lib/env.js";
 
 export const signUp=async(req,res)=>{
   const {fullName,email,password}=req.body;
@@ -33,7 +35,7 @@ export const signUp=async(req,res)=>{
       if(newUser){
         const savedUser=await newUser.save();
         generateToken(savedUser._id,res);
-         return res.status(201).json({
+         res.status(201).json({
       message: "User created successfully",
       user: {
         _id: savedUser._id,
@@ -43,6 +45,12 @@ export const signUp=async(req,res)=>{
       });
 
       //todo: send a welcome email to the user after successful registration
+      try {
+        await sendWelcomeEmail(savedUser.email,savedUser.fullName,ENV.CLIENT_URL);
+      } catch (error) {
+        console.error("Error sending welcome email:", error);
+      }
+
 
       }
       else{
