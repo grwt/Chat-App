@@ -115,6 +115,7 @@ export const updateProfilePicture=async(req,res)=>{
 
 
   } catch (error) {
+    vjrnrjn
     return res.status(500).json({message:"Server error"});
   }
 }
