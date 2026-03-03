@@ -1,0 +1,79 @@
+import User from "../models/user.model.js";
+import Message from "../models/Message.model.js";
+
+
+export const getAllContacts=async(req,res)=>{
+  try {
+    const loggedInUserId= req.user._id;
+    const filteredUsers=await User.find({_id:{$ne:loggedInUserId}}).select("-password");
+    res.status(200).json(filteredUsers);
+  } catch (error) {
+    console.log("Error in getAllContacts controller", error.message);
+    res.status(500).json({message:"Server error"});
+  }
+}
+
+export const getAllChats=async(req,res)=>{
+  try {
+    const loggedInUserId= req.user._id;
+    const messages=await Message.find({
+      $or:[{senderId:loggedInUserId},{receiverId:loggedInUserId}],
+    })
+    const chatUserIds=[...new Set(messages.map((msg)=>msg.senderId.toString()===loggedInUserId.toString()?msg.receiverId.toString():msg.senderId.toString()))];
+
+    const chatPartners= await User.find({id:{$in:chatUserIds}}).select("-password");
+
+    res.status(200).json(chatPartners);
+  } catch (error) {
+    console.log("Error in getAllChats controller", error.message);
+    return res.status(500).json({message:"Server error"});
+  }
+}
+
+export const getMessageByUserId=async(req,res)=>{
+  try {
+    const myId=req.user._id;
+    const {id:userToChatId}=req.params;
+    const message=await Message.find({
+      $or:[
+        {sender:myId,receiver:userToChatId},
+        {sender:userToChatId,receiver:myId}
+      ]
+    })
+
+    res.status(200).json(message);
+
+  } catch (error) {
+    console.log("Error in getMessageByUserId controller", error.message);
+    res.status(500).json({message:"Server error"});
+  }
+}
+
+export const sendMessage=async(req,res)=>{
+  try {
+    const {text,image}=req.body;
+    const {id:receiverId}=req.params;
+    const senderId=req.user._id;
+    let imageUrl;
+    if(image){
+      const uploadImage=await cloudinary.uploader.upload(image);
+       imageUrl=uploadImage.secure_url;
+    }
+    const newMessage= new Message({
+      senderId,
+      receiverId,
+      text,
+      image:imageUrl,
+    });
+      await newMessage.save();
+     //TODO:send message in real time using socket.io if receiver is online
+
+
+    res.status(201).json({message:"message sent successfully",data:newMessage});
+  } catch (error) {
+    console.log("Error in sendMessage controller", error.message);
+    res.status(500).json({message:"Server error"});
+  }
+
+}
+

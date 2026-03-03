@@ -1,6 +1,6 @@
 import express from "express";
 import authRouter from "./routes/auth.routes.js";
-import messageRouter from "./routes/message.routes.js ";
+import messageRouter from "./routes/message.routes.js";
 import { connectDB } from "./lib/db.js";
 import {ENV} from "./lib/env.js"; 
 import cookieParser from "cookie-parser";
