@@ -12,7 +12,7 @@ router.post("/signup",signUp);
 router.post("/login",login);
 router.post("/logout",logout);
 
-router.put("/update-profile-picture",verifyToken,updateProfilePicture)
+router.put("/update-profile",verifyToken,updateProfilePicture)
 
 router.get("/check",verifyToken,(req,res)=>{
   res.status(200).json({message:"Authenticated",user:req.user});
