@@ -105,7 +105,10 @@ export const updateProfilePicture=async(req,res)=>{
     if(!profilePicture) return res.status(400).json({message:"Profile picture is required"});
 
     const userId=req.user._id;
-    const uploadResult=await cloudinary.uploader.upload(profilePicture);
+    const uploadResult=await cloudinary.uploader.upload(profilePicture,{
+  folder: "profiles",
+  transformation: [{ width: 500, height: 500, crop: "fill" }]
+});
     const updateUser=await User.findByIdAndUpdate(userId,{profilePicture:uploadResult.secure_url},{
       new:true,
     });
@@ -115,7 +118,7 @@ export const updateProfilePicture=async(req,res)=>{
 
 
   } catch (error) {
-    vjrnrjn
+    console.error(error);
     return res.status(500).json({message:"Server error"});
   }
 }
