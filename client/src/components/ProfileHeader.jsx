@@ -21,10 +21,8 @@ function ProfileHeader() {
 
     reader.onloadend = async () => {
       const base64Image = reader.result;
-      const success=await updateProfile({ profilePicture: base64Image });
-      if(success){
-        setSelectedImg(base64Image);
-      }
+      setSelectedImg(base64Image);
+      await updateProfile({ profilePic: base64Image });
     };
   };
 
