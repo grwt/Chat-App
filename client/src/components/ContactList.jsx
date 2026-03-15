@@ -14,7 +14,7 @@ function ContactList() {
   if (isUsersLoading) return <UsersLoadingSkeleton />;
 
   return (
-    <>
+    <div>
       {allContacts.map((contact) => (
         <div
           key={contact._id}
@@ -31,7 +31,7 @@ function ContactList() {
           </div>
         </div>
       ))}
-    </>
+    </div>
   );
 }
 export default ContactList;
