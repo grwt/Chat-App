@@ -6,6 +6,11 @@ import {ENV} from "./lib/env.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { app, server } from "./lib/socket.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT=ENV.PORT||3000;
 
@@ -19,6 +24,14 @@ app.use(cookieParser());
 
 app.use("/api/auth",authRouter);
 app.use("/api/messages", messageRouter);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../../client/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../client/dist", "index.html"));
+  });
+}
 
 server.listen(PORT,()=>{console.log(`server running on port ${PORT}`)
 connectDB();
